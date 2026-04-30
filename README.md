@@ -88,18 +88,6 @@ newman run postman/collections/orders.json \
 
 ---
 
-## Variables de Entorno
-
-El archivo `local.json` debe definir:
-
-| Variable | Valor |
-|----------|-------|
-| `base_url` | `http://localhost:8000/api/mongo` |
-
-> No subir al repositorio archivos de entorno que contengan secretos o tokens.
-
----
-
 ## Cobertura de Pruebas
 
 | Recurso | Operaciones |
