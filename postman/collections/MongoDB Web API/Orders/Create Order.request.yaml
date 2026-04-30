@@ -1,0 +1,28 @@
+$kind: http-request
+name: Create Order
+method: POST
+url: '{{baseUrl}}/order/'
+order: 3000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "cliente_id": "{{cliente_id}}",
+      "fecha": "2024-01-01T00:00:00",
+      "canal": "WEB",
+      "moneda": "CRC",
+      "total": 1000,
+      "items": [
+        {
+          "producto_id": "{{product_id}}",
+          "cantidad": 1,
+          "precio_unit": 1000
+        }
+      ],
+      "metadatos": {
+        "cupon": null
+      }
+    }

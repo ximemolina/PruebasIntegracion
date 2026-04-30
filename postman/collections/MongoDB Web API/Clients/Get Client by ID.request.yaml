@@ -1,0 +1,5 @@
+$kind: http-request
+name: Get Client by ID
+method: GET
+url: '{{baseUrl}}/clients/{{cliente_id}}'
+order: 2000

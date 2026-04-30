@@ -1,0 +1,10 @@
+$kind: http-request
+name: List Orders
+method: GET
+url: '{{baseUrl}}/order/'
+order: 1000
+queryParams:
+  - key: skip
+    value: '0'
+  - key: limit
+    value: '10'

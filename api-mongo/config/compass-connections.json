@@ -1,0 +1,26 @@
+{
+  "type": "Compass Connections",
+  "version": {
+    "$numberInt": "1"
+  },
+  "connections": [
+    {
+      "id": "7f6b4006-6881-4d46-823f-2a13bbffe5dc",
+      "lastUsed": {
+        "$date": {
+          "$numberLong": "1777508917732"
+        }
+      },
+      "favorite": {
+        "name": "clusterbd2.ljrpd0b.mongodb.net"
+      },
+      "savedConnectionType": "recent",
+      "connectionOptions": {
+        "connectionString": "mongodb+srv://DBUser:Contrasena@clusterbd2.ljrpd0b.mongodb.net/",
+        "oidc": {
+          "serializedState": "eyJvaWRjUGx1Z2luU3RhdGVWZXJzaW9uIjoxLCJzdGF0ZSI6W119"
+        }
+      }
+    }
+  ]
+}
