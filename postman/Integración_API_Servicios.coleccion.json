@@ -1,0 +1,225 @@
+{
+  "info": {
+    "name": "Integración API - Servicios",
+    "description": "Coleccion para realizar las pruebas de integración",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8000/api/mongo"
+    }
+  ],
+  "item": [
+    {
+      "name": "Clients",
+      "item": [
+        {
+          "name": "List clients",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/clients/",
+              "host": ["{{baseUrl}}"],
+              "path": ["clients", ""]
+            },
+            "description": "List all clients"
+          }
+        },
+        {
+          "name": "Get client by id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/clients/{{cliente_id}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["clients", "{{cliente_id}}"],
+              "variable": [
+                {
+                  "key": "cliente_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Get a client by their ID"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Products",
+      "item": [
+        {
+          "name": "List products",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/products/?skip=0&limit=10000",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", ""],
+              "query": [
+                {
+                  "key": "skip",
+                  "value": "0"
+                },
+                {
+                  "key": "limit",
+                  "value": "10000"
+                }
+              ]
+            },
+            "description": "List all products with pagination"
+          }
+        },
+        {
+          "name": "Get product by id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/products/{{product_id}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", "{{product_id}}"],
+              "variable": [
+                {
+                  "key": "product_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Get a product by its ID"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Orders",
+      "item": [
+        {
+          "name": "List orders",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/order/?skip=0&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["order", ""],
+              "query": [
+                {
+                  "key": "skip",
+                  "value": "0"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "List all orders with pagination"
+          }
+        },
+        {
+          "name": "Get order by id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/order/{{order_id}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["order", "{{order_id}}"],
+              "variable": [
+                {
+                  "key": "order_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Get an order by its ID"
+          }
+        },
+        {
+          "name": "Create order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cliente_id\": \"60d5ec49f8d2e30d8c8b4567\",\n  \"fecha\": \"2024-01-15T10:30:00\",\n  \"canal\": \"WEB\",\n  \"moneda\": \"CRC\",\n  \"total\": 5000,\n  \"items\": [\n    {\n      \"producto_id\": \"60d5ec49f8d2e30d8c8b4568\",\n      \"cantidad\": 2,\n      \"precio_unit\": 2500\n    }\n  ],\n  \"metadatos\": {\n    \"cupon\": \"DESCUENTO10\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/order/",
+              "host": ["{{baseUrl}}"],
+              "path": ["order", ""]
+            },
+            "description": "Create a new order (returns 201 Created)"
+          }
+        },
+        {
+          "name": "Update order",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cliente_id\": \"60d5ec49f8d2e30d8c8b4567\",\n  \"fecha\": \"2024-01-15T10:30:00\",\n  \"canal\": \"WEB\",\n  \"moneda\": \"CRC\",\n  \"total\": 5000,\n  \"items\": [\n    {\n      \"producto_id\": \"60d5ec49f8d2e30d8c8b4568\",\n      \"cantidad\": 2,\n      \"precio_unit\": 2500\n    }\n  ],\n  \"metadatos\": {\n    \"cupon\": \"DESCUENTO10\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/order/{{order_id}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["order", "{{order_id}}"],
+              "variable": [
+                {
+                  "key": "order_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Update an existing order by its ID"
+          }
+        },
+        {
+          "name": "Delete order",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/order/{{order_id}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["order", "{{order_id}}"],
+              "variable": [
+                {
+                  "key": "order_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Delete an order by its ID"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,5 +1,0 @@
-$kind: collection
-name: MongoDB Web API
-variables:
-  - key: baseUrl
-    value: 'http://localhost:3000/api/mongo'
