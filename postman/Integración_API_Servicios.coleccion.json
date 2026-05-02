@@ -33,12 +33,12 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/clients/{{cliente_id}}",
+              "raw": "{{baseUrl}}/clients/{{client_id}}",
               "host": ["{{baseUrl}}"],
-              "path": ["clients", "{{cliente_id}}"],
+              "path": ["clients", "{{client_id}}"],
               "variable": [
                 {
-                  "key": "cliente_id",
+                  "key": "client_id",
                   "value": ""
                 }
               ]
