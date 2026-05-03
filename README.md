@@ -54,6 +54,8 @@ El servidor estará disponible en `http://localhost:8000`.
 
 ## Pruebas Automatizadas (Newman)
 
+Antes de ejecutar el comando, en el 'environment' de postman hay que rellenar los valores de 'base_url', 'client_id', 'product_id' y 'order_id'.
+
 Ejecutar cada colección contra el entorno local:
 
 ```bash
