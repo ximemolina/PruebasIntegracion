@@ -1,11 +1,10 @@
 {
   "info": {
-    "_postman_id": "49a282a3-f9f7-41ed-a064-ac4ebaeb929a",
+    "_postman_id": "26d4b816-2cd9-4b29-b8f5-ec1756338b9e",
     "name": "Integración API - Servicios",
     "description": "Coleccion para realizar las pruebas de integración",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_exporter_id": "47801774",
-    "_collection_link": "https://go.postman.co/collection/47801774-49a282a3-f9f7-41ed-a064-ac4ebaeb929a?source=collection_link"
+    "_exporter_id": "43666731"
   },
   "item": [
     {
@@ -197,12 +196,71 @@
       "name": "Products",
       "item": [
         {
-          "name": "List products",
+          "name": "TC-15: Listar todos los productos con paginación",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Definir jsonData una sola vez\r",
+                  "let jsonData = pm.response.json();\r",
+                  "\r",
+                  "// Estado HTTP\r",
+                  "pm.test(\"El código de estado es 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "// Contrato: validar que existen las claves principales\r",
+                  "pm.test(\"El body contiene las claves requeridas.\", function () {\r",
+                  "    pm.expect(jsonData).to.have.keys([\"total\",\"skip\",\"limit\",\"data\"]);\r",
+                  "    pm.expect(jsonData.data).to.be.an(\"array\");\r",
+                  "});\r",
+                  "\r",
+                  "// Formato: validar tipos de datos principales\r",
+                  "pm.test(\"Los campos principales tienen el formato correcto.\", function () {\r",
+                  "    pm.expect(jsonData.total).to.be.a(\"number\");\r",
+                  "    pm.expect(jsonData.skip).to.be.a(\"number\");\r",
+                  "    pm.expect(jsonData.limit).to.be.a(\"number\");\r",
+                  "});\r",
+                  "\r",
+                  "// Contenido: validar coherencia de paginación\r",
+                  "pm.test(\"El número de elementos en 'data' coincide con 'limit'.\", function () {\r",
+                  "    pm.expect(jsonData.data.length).to.equal(jsonData.limit);\r",
+                  "});\r",
+                  "\r",
+                  "// Validar estructura de cada objeto en data\r",
+                  "pm.test(\"Cada objeto en 'data' tiene los campos requeridos.\", function () {\r",
+                  "    let regexObjectId = /^[0-9a-fA-F]{24}$/;\r",
+                  "\r",
+                  "    jsonData.data.forEach(obj => {\r",
+                  "        pm.expect(obj).to.have.property(\"_id\").that.matches(regexObjectId);\r",
+                  "        pm.expect(obj).to.have.property(\"codigo_mongo\").that.is.a(\"string\");\r",
+                  "        pm.expect(obj).to.have.property(\"nombre\").that.is.a(\"string\");\r",
+                  "        pm.expect(obj).to.have.property(\"categoria\").that.is.a(\"string\");\r",
+                  "        pm.expect(obj).to.have.property(\"equivalencias\").that.is.an(\"object\");\r",
+                  "\r",
+                  "        // Validar equivalencias\r",
+                  "        pm.expect(obj.equivalencias).to.have.property(\"codigo_alt\").that.is.a(\"string\");\r",
+                  "\r",
+                  "        // sku es opcional, si existe debe ser string\r",
+                  "        if (obj.equivalencias.hasOwnProperty(\"sku\")) {\r",
+                  "            pm.expect(obj.equivalencias.sku).to.be.a(\"string\");\r",
+                  "        }\r",
+                  "    });\r",
+                  "});\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
           "request": {
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/products/?skip=0&limit=10000",
+              "raw": "{{baseUrl}}/products/?skip=0&limit=10",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -217,7 +275,7 @@
                 },
                 {
                   "key": "limit",
-                  "value": "10000"
+                  "value": "10"
                 }
               ]
             },
@@ -226,7 +284,179 @@
           "response": []
         },
         {
-          "name": "Get product by id",
+          "name": "TC-16: Listar todos los productos con paginación inválida",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Estado HTTP\r",
+                  "pm.test(\"Código de status es 422\", function () {\r",
+                  "    pm.response.to.have.status(422);\r",
+                  "});\r",
+                  "\r",
+                  "// Contrato: validar que existe 'detail' y es un array\r",
+                  "pm.test(\"El body de la respuesta contiene un arreglo 'detail'.\", function () {\r",
+                  "    let jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData).to.have.property(\"detail\");\r",
+                  "    pm.expect(jsonData.detail).to.be.an(\"array\").that.is.not.empty;\r",
+                  "});\r",
+                  "\r",
+                  "// Formato: validar estructura del objeto dentro de detail\r",
+                  "pm.test(\"El objeto dentro de 'detail' tiene los campos correctos.\", function () {\r",
+                  "    let jsonData = pm.response.json();\r",
+                  "    let errorObj = jsonData.detail[0]; // primer error\r",
+                  "\r",
+                  "    pm.expect(errorObj).to.have.property(\"type\").that.is.a(\"string\");\r",
+                  "    pm.expect(errorObj).to.have.property(\"loc\").that.is.an(\"array\");\r",
+                  "    pm.expect(errorObj).to.have.property(\"msg\").that.is.a(\"string\");\r",
+                  "    pm.expect(errorObj).to.have.property(\"input\").that.is.a(\"string\");\r",
+                  "});\r",
+                  "\r",
+                  "// Contenido: validar que el error corresponde a int_parsing\r",
+                  "pm.test(\"El tipo de error y el mensaje son correctos.\", function () {\r",
+                  "    let jsonData = pm.response.json();\r",
+                  "    let errorObj = jsonData.detail[0];\r",
+                  "\r",
+                  "    pm.expect(errorObj.type).to.equal(\"int_parsing\");\r",
+                  "    pm.expect(errorObj.msg).to.include(\"unable to parse string as an integer\");\r",
+                  "});\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/products/?skip=0&limit=\"cinco\"",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "products",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "skip",
+                  "value": "0"
+                },
+                {
+                  "key": "limit",
+                  "value": "\"cinco\""
+                }
+              ]
+            },
+            "description": "List all products with pagination"
+          },
+          "response": []
+        },
+        {
+          "name": "TC-17: Listar producto específico",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Definir jsonData una sola vez\r",
+                  "let jsonData = pm.response.json();\r",
+                  "\r",
+                  "// Estado HTTP\r",
+                  "pm.test(\"El código de estado es 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "// Contrato: validar que existen las claves principales\r",
+                  "pm.test(\"El objeto contiene las claves requeridas.\", function () {\r",
+                  "    pm.expect(jsonData).to.have.keys([\"_id\",\"codigo_mongo\",\"nombre\",\"categoria\",\"equivalencias\"]);\r",
+                  "});\r",
+                  "\r",
+                  "// Formato: validar tipos de datos principales\r",
+                  "pm.test(\"Los campos principales tienen el formato correcto.\", function () {\r",
+                  "    let regexObjectId = /^[0-9a-fA-F]{24}$/;\r",
+                  "\r",
+                  "    pm.expect(jsonData._id).to.match(regexObjectId);\r",
+                  "    pm.expect(jsonData.codigo_mongo).to.be.a(\"string\");\r",
+                  "    pm.expect(jsonData.nombre).to.be.a(\"string\");\r",
+                  "    pm.expect(jsonData.categoria).to.be.a(\"string\");\r",
+                  "    pm.expect(jsonData.equivalencias).to.be.an(\"object\");\r",
+                  "});\r",
+                  "\r",
+                  "// Contenido / Regla de negocio: validar equivalencias\r",
+                  "pm.test(\"Equivalencias contiene al menos codigo_alt y opcionalmente sku\", function () {\r",
+                  "    pm.expect(jsonData.equivalencias).to.have.property(\"codigo_alt\").that.is.a(\"string\");\r",
+                  "\r",
+                  "    if (jsonData.equivalencias.hasOwnProperty(\"sku\")) {\r",
+                  "        pm.expect(jsonData.equivalencias.sku).to.be.a(\"string\");\r",
+                  "    }\r",
+                  "});\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/products/{{product_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "products",
+                "{{product_id}}"
+              ],
+              "variable": [
+                {
+                  "key": "product_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Get a product by its ID"
+          },
+          "response": []
+        },
+        {
+          "name": "TC-18: Listar producto específico con id no existente",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Estado HTTP\r",
+                  "pm.test(\"El código de estado es 404\", function () {\r",
+                  "    pm.response.to.have.status(404);\r",
+                  "});\r",
+                  "\r",
+                  "// Contrato: validar que existe 'detail' y es un string\r",
+                  "pm.test(\"La respuesta contiene el campo 'detail' como string.\", function () {\r",
+                  "    let jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData).to.have.property(\"detail\");\r",
+                  "    pm.expect(jsonData.detail).to.be.a(\"string\");\r",
+                  "});\r",
+                  "\r",
+                  "// Contenido: validar que el mensaje indica que la orden no fue encontrada\r",
+                  "pm.test(\"El mensaje de error indica que el producto no existe.\", function () {\r",
+                  "    let jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData.detail).to.include(\"not found\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
           "request": {
             "method": "GET",
             "header": [],
@@ -256,7 +486,62 @@
       "name": "Orders",
       "item": [
         {
-          "name": "List orders",
+          "name": "TC-01: Listar todas las órdenes con paginación",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Estado HTTP\r",
+                  "pm.test(\"Código de status es 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "// Contrato: validar claves principales\r",
+                  "pm.test(\"Body de respuesta tiene los campos total, skip, limit y data.\", function () {\r",
+                  "    let jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData).to.have.keys([\"total\",\"skip\",\"limit\",\"data\"]);\r",
+                  "    pm.expect(jsonData.data).to.be.an(\"array\");\r",
+                  "});\r",
+                  "\r",
+                  "// Contenido: validar coherencia de valores\r",
+                  "pm.test(\"Coherencia de valores, total y precio_unit son mayores a 0 y el número de items es igual al límite.\", function () {\r",
+                  "    let jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData.total).to.be.above(0);\r",
+                  "    pm.expect(jsonData.data[0].items[0].precio_unit).to.be.above(0);\r",
+                  "    pm.expect(jsonData.data.length).to.equal(jsonData.limit);\r",
+                  "});\r",
+                  "\r",
+                  "// Formato: validar ObjectId y fecha ISO\r",
+                  "pm.test(\"Los datos de los objetos del campo Data e Items tienen el formato correcto.\", function () {\r",
+                  "    let jsonData = pm.response.json();\r",
+                  "    let regexObjectId = /^[0-9a-fA-F]{24}$/;\r",
+                  "    let regexISODate = /^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$/;\r",
+                  "\r",
+                  "    jsonData.data.forEach(obj => {\r",
+                  "        pm.expect(obj._id).to.match(regexObjectId);\r",
+                  "        pm.expect(obj.cliente_id).to.match(regexObjectId);\r",
+                  "        pm.expect(obj.fecha).to.match(regexISODate);\r",
+                  "        pm.expect(obj.canal).to.be.a(\"string\");\r",
+                  "        pm.expect(obj.moneda).to.be.a(\"string\");\r",
+                  "        pm.expect(obj.total).to.be.above(0);\r",
+                  "\r",
+                  "        pm.expect(obj.items).to.be.an(\"array\").that.is.not.empty;\r",
+                  "        obj.items.forEach(item => {\r",
+                  "            pm.expect(item.producto_id).to.match(regexObjectId);\r",
+                  "            pm.expect(item.cantidad).to.be.above(0);\r",
+                  "            pm.expect(item.precio_unit).to.be.above(0);\r",
+                  "        });\r",
+                  "    });\r",
+                  "});\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
           "request": {
             "method": "GET",
             "header": [],
@@ -285,7 +570,132 @@
           "response": []
         },
         {
-          "name": "Get order by id",
+          "name": "TC-02: Listar todas las órdenes con paginación inválida",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Estado HTTP\r",
+                  "pm.test(\"Código de status es 422\", function () {\r",
+                  "    pm.response.to.have.status(422);\r",
+                  "});\r",
+                  "\r",
+                  "// Contrato: validar que existe 'detail' y es un array\r",
+                  "pm.test(\"El body de la respuesta contiene un arreglo 'detail'.\", function () {\r",
+                  "    let jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData).to.have.property(\"detail\");\r",
+                  "    pm.expect(jsonData.detail).to.be.an(\"array\").that.is.not.empty;\r",
+                  "});\r",
+                  "\r",
+                  "// Formato: validar estructura del objeto dentro de detail\r",
+                  "pm.test(\"El objeto dentro de 'detail' tiene los campos correctos.\", function () {\r",
+                  "    let jsonData = pm.response.json();\r",
+                  "    let errorObj = jsonData.detail[0]; // primer error\r",
+                  "\r",
+                  "    pm.expect(errorObj).to.have.property(\"type\").that.is.a(\"string\");\r",
+                  "    pm.expect(errorObj).to.have.property(\"loc\").that.is.an(\"array\");\r",
+                  "    pm.expect(errorObj).to.have.property(\"msg\").that.is.a(\"string\");\r",
+                  "    pm.expect(errorObj).to.have.property(\"input\").that.is.a(\"string\");\r",
+                  "});\r",
+                  "\r",
+                  "// Contenido: validar que el error corresponde a int_parsing\r",
+                  "pm.test(\"El tipo de error y el mensaje son correctos.\", function () {\r",
+                  "    let jsonData = pm.response.json();\r",
+                  "    let errorObj = jsonData.detail[0];\r",
+                  "\r",
+                  "    pm.expect(errorObj.type).to.equal(\"int_parsing\");\r",
+                  "    pm.expect(errorObj.msg).to.include(\"unable to parse string as an integer\");\r",
+                  "});\r",
+                  "\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/order/?skip=0&limit=\"10\"",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "order",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "skip",
+                  "value": "0"
+                },
+                {
+                  "key": "limit",
+                  "value": "\"10\""
+                }
+              ]
+            },
+            "description": "List all orders with pagination"
+          },
+          "response": []
+        },
+        {
+          "name": "TC-03: Listar orden específica",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Estado HTTP\r",
+                  "pm.test(\"El código de estado es 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "// Contrato: validar que existen las claves principales\r",
+                  "pm.test(\"El objeto de respuesta contiene los campos requeridos.\", function () {\r",
+                  "    let jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData).to.have.keys([\"_id\",\"cliente_id\",\"fecha\",\"canal\",\"moneda\",\"total\",\"items\"]);\r",
+                  "    pm.expect(jsonData.items).to.be.an(\"array\");\r",
+                  "});\r",
+                  "\r",
+                  "// Formato: validar ObjectId y fecha ISO 8601\r",
+                  "pm.test(\"Los campos tienen el formato correcto.\", function () {\r",
+                  "    let jsonData = pm.response.json();\r",
+                  "    let regexObjectId = /^[0-9a-fA-F]{24}$/;\r",
+                  "    let regexISODate = /^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?$/;\r",
+                  "\r",
+                  "    pm.expect(jsonData._id).to.match(regexObjectId);\r",
+                  "    pm.expect(jsonData.cliente_id).to.match(regexObjectId);\r",
+                  "    pm.expect(jsonData.fecha).to.match(regexISODate);\r",
+                  "    pm.expect(jsonData.canal).to.be.a(\"string\");\r",
+                  "    pm.expect(jsonData.moneda).to.be.a(\"string\");\r",
+                  "});\r",
+                  "\r",
+                  "// Contenido: validar coherencia de valores\r",
+                  "pm.test(\"Los valores son coherentes.\", function () {\r",
+                  "    let jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData.total).to.be.above(0);\r",
+                  "\r",
+                  "    pm.expect(jsonData.items).to.be.an(\"array\").that.is.not.empty;\r",
+                  "    jsonData.items.forEach(item => {\r",
+                  "        let regexObjectId = /^[0-9a-fA-F]{24}$/;\r",
+                  "        pm.expect(item.producto_id).to.match(regexObjectId);\r",
+                  "        pm.expect(item.cantidad).to.be.above(0);\r",
+                  "        pm.expect(item.precio_unit).to.be.above(0);\r",
+                  "    });\r",
+                  "});\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
           "request": {
             "method": "GET",
             "header": [],
@@ -310,7 +720,94 @@
           "response": []
         },
         {
-          "name": "Create order",
+          "name": "TC-04: Listar orden específica con id no existente",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Estado HTTP\r",
+                  "pm.test(\"El código de estado es 404\", function () {\r",
+                  "    pm.response.to.have.status(404);\r",
+                  "});\r",
+                  "\r",
+                  "// Contrato: validar que existe 'detail' y es un string\r",
+                  "pm.test(\"La respuesta contiene el campo 'detail' como string.\", function () {\r",
+                  "    let jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData).to.have.property(\"detail\");\r",
+                  "    pm.expect(jsonData.detail).to.be.a(\"string\");\r",
+                  "});\r",
+                  "\r",
+                  "// Contenido: validar que el mensaje indica que la orden no fue encontrada\r",
+                  "pm.test(\"El mensaje de error indica que la orden no existe.\", function () {\r",
+                  "    let jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData.detail).to.include(\"not found\");\r",
+                  "});\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/order/{{order_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "order",
+                "{{order_id}}"
+              ],
+              "variable": [
+                {
+                  "key": "order_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Get an order by its ID"
+          },
+          "response": []
+        },
+        {
+          "name": "TC-05: Crear una orden",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Estado HTTP\r",
+                  "pm.test(\"El código de estado es 201\", function () {\r",
+                  "    pm.response.to.have.status(201);\r",
+                  "});\r",
+                  "\r",
+                  "// Contrato: validar que existe 'order_id'\r",
+                  "pm.test(\"La respuesta contiene el campo 'order_id'.\", function () {\r",
+                  "    let jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData).to.have.property(\"order_id\");\r",
+                  "});\r",
+                  "\r",
+                  "// Formato: validar que 'order_id' cumple con el patrón de ObjectId\r",
+                  "pm.test(\"El campo 'order_id' tiene formato ObjectId.\", function () {\r",
+                  "    let jsonData = pm.response.json();\r",
+                  "    let regexObjectId = /^[0-9a-fA-F]{24}$/;\r",
+                  "    pm.expect(jsonData.order_id).to.match(regexObjectId);\r",
+                  "    pm.environment.set(\"order_id\", jsonData.order_id);\r",
+                  "\r",
+                  "});\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
@@ -322,6 +819,92 @@
             "body": {
               "mode": "raw",
               "raw": "{\n  \"cliente_id\": \"60d5ec49f8d2e30d8c8b4567\",\n  \"fecha\": \"2024-01-15T10:30:00\",\n  \"canal\": \"WEB\",\n  \"moneda\": \"CRC\",\n  \"total\": 5000,\n  \"items\": [\n    {\n      \"producto_id\": \"60d5ec49f8d2e30d8c8b4568\",\n      \"cantidad\": 2,\n      \"precio_unit\": 2500\n    }\n  ],\n  \"metadatos\": {\n    \"cupon\": \"DESCUENTO10\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/order/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "order",
+                ""
+              ]
+            },
+            "description": "Create a new order (returns 201 Created)"
+          },
+          "response": []
+        },
+        {
+          "name": "TC-06: Crear una orden con entradas inválidas",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Estado HTTP\r",
+                  "pm.test(\"El código de estado es 422\", function () {\r",
+                  "    pm.response.to.have.status(422);\r",
+                  "});\r",
+                  "\r",
+                  "// Contrato: validar que existe 'detail'\r",
+                  "pm.test(\"El body de la respuesta contiene el campo 'detail'.\", function () {\r",
+                  "    let jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData).to.have.property(\"detail\");\r",
+                  "});\r",
+                  "\r",
+                  "// Validación flexible: 'detail' puede ser string o array\r",
+                  "let jsonData = pm.response.json();\r",
+                  "if (typeof jsonData.detail === \"string\") {\r",
+                  "    // Caso: detail es un string\r",
+                  "    //pm.expect(jsonData.detail).to.include(\"must be a valid ObjectId\");\r",
+                  "    pm.test(\"El campo 'detail' es un string y el mensaje de error indica que el cliente_id/producto_id debe ser un ObjectId.\", function () {\r",
+                  "        let jsonData = pm.response.json();\r",
+                  "        pm.expect(jsonData.detail).to.include(\"must be a valid ObjectId\");\r",
+                  "    });\r",
+                  "} else if (Array.isArray(jsonData.detail)) {\r",
+                  "    // Caso: detail es un array\r",
+                  "    pm.test(\"El campo 'detail' es un array válido no vacío y los valores de su objeto tiene las propiedades correctas.\", function () {\r",
+                  "        pm.expect(jsonData.detail).to.be.an(\"array\").that.is.not.empty;\r",
+                  "\r",
+                  "        let errorObj = jsonData.detail[0];\r",
+                  "        pm.expect(errorObj).to.have.property(\"type\").that.is.a(\"string\");\r",
+                  "        pm.expect(errorObj).to.have.property(\"loc\").that.is.an(\"array\");\r",
+                  "        pm.expect(errorObj).to.have.property(\"msg\").that.is.a(\"string\");\r",
+                  "        pm.expect(errorObj).to.have.property(\"input\");\r",
+                  "        pm.expect(errorObj).to.have.property(\"ctx\").that.is.an(\"object\");\r",
+                  "    });\r",
+                  "\r",
+                  "} else {\r",
+                  "    // Si no es ni string ni array, falla el test\r",
+                  "    pm.expect.fail(\"El campo 'detail' no es ni string ni array válido.\");\r",
+                  "}\r",
+                  "\r",
+                  "\r",
+                  "\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cliente_id\": \"60d5ec49f8d2e30d8c8\",\n  \"fecha\": \"2024-01-15T10:30:00\",\n  \"canal\": \"HOLA\",\n  \"moneda\": 8,\n  \"total\": 5000,\n  \"items\": [\n    {\n      \"producto_id\": \"60d5ec49f8d2e30d8c8b4568\",\n      \"cantidad\": 2,\n      \"precio_unit\": 2500\n    }\n  ],\n  \"metadatos\": {\n    \"cupon\": \"DESCUENTO10\"\n  }\n}",
               "options": {
                 "raw": {
                   "language": "json"
