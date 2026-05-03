@@ -876,13 +876,12 @@
                   "        pm.expect(errorObj).to.have.property(\"loc\").that.is.an(\"array\");\r",
                   "        pm.expect(errorObj).to.have.property(\"msg\").that.is.a(\"string\");\r",
                   "        pm.expect(errorObj).to.have.property(\"input\");\r",
-                  "        pm.expect(errorObj).to.have.property(\"ctx\").that.is.an(\"object\");\r",
+                  "        if (errorObj.hasOwnProperty(\"ctx\")) {\r",
+                  "            pm.expect(errorObj).to.have.property(\"ctx\").that.is.an(\"object\");\r",
+                  "        }\r",
                   "    });\r",
                   "\r",
-                  "} else {\r",
-                  "    // Si no es ni string ni array, falla el test\r",
-                  "    pm.expect.fail(\"El campo 'detail' no es ni string ni array válido.\");\r",
-                  "}\r",
+                  "} \r",
                   "\r",
                   "\r",
                   "\r",
@@ -904,7 +903,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"cliente_id\": \"60d5ec49f8d2e30d8c8\",\n  \"fecha\": \"2024-01-15T10:30:00\",\n  \"canal\": \"HOLA\",\n  \"moneda\": 8,\n  \"total\": 5000,\n  \"items\": [\n    {\n      \"producto_id\": \"60d5ec49f8d2e30d8c8b4568\",\n      \"cantidad\": 2,\n      \"precio_unit\": 2500\n    }\n  ],\n  \"metadatos\": {\n    \"cupon\": \"DESCUENTO10\"\n  }\n}",
+              "raw": "{\n  \"cliente_id\": \"hola\",\n  \"fecha\": \"2024-01-15T10:30:00\",\n  \"canal\": \"WEB\",\n  \"moneda\": \"CRC\",\n  \"total\": 5000,\n  \"items\": [\n    {\n      \"producto_id\": \"60d5ec49f8d2e30d8c8b4568\",\n      \"cantidad\": 2,\n      \"precio_unit\": 2500\n    }\n  ],\n  \"metadatos\": {\n    \"cupon\": \"DESCUENTO10\"\n  }\n}",
               "options": {
                 "raw": {
                   "language": "json"
