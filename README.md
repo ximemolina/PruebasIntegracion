@@ -20,16 +20,13 @@ PruebasIntegracion/
 
 ---
 
-## Requisitos
 
+## Prerequisitos
 - [Node.js](https://nodejs.org/) (para Newman)
 - [Postman](https://www.postman.com/downloads/) (para pruebas manuales)
+- Newman: `npm install -g newman` o usar `npx`
 - El servidor `api-mongo` corriendo localmente
 
-**Instalar Newman globalmente:**
-```bash
-npm install -g newman
-```
 
 ---
 
@@ -60,30 +57,7 @@ El servidor estará disponible en `http://localhost:8000`.
 Ejecutar cada colección contra el entorno local:
 
 ```bash
-# Órdenes
-newman run postman/collections/orders.json -e postman/environments/local.json
-
-# Clientes
-newman run postman/collections/clients.json -e postman/environments/local.json
-
-# Productos
-newman run postman/collections/products.json -e postman/environments/local.json
-```
-
-**Ejecutar todas a la vez:**
-```bash
-for collection in postman/collections/*.json; do
-  newman run "$collection" -e postman/environments/local.json
-done
-```
-
-**Generar reporte HTML:**
-```bash
-npm install -g newman-reporter-htmlextra
-
-newman run postman/collections/orders.json \
-  -e postman/environments/local.json \
-  -r htmlextra --reporter-htmlextra-export reportes/orders.html
+npx newman run postman/Integración_API_Servicios.coleccion.json -e postman/QA_API_LAB.postman_environment.json --env-var "base_url=TU_BASE_URL" --env-var "product_id=TU_PRODUCTO_ID" --env-var "client_id=TU_CLIENTE_ID" --env-var "order_id=TU_ORDEN_ID"
 ```
 
 ---

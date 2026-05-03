@@ -1,50 +1,195 @@
 {
   "info": {
+    "_postman_id": "49a282a3-f9f7-41ed-a064-ac4ebaeb929a",
     "name": "Integración API - Servicios",
     "description": "Coleccion para realizar las pruebas de integración",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "47801774",
+    "_collection_link": "https://go.postman.co/collection/47801774-49a282a3-f9f7-41ed-a064-ac4ebaeb929a?source=collection_link"
   },
-  "variable": [
-    {
-      "key": "baseUrl",
-      "value": "http://localhost:8000/api/mongo"
-    }
-  ],
   "item": [
     {
       "name": "Clients",
       "item": [
         {
-          "name": "List clients",
+          "name": "TC-11: Listar todos los clientes",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Código de status es 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "\r",
+                  "pm.test(\"Body de respuesta tiene los campos total, skip, limit y data. El campo data posee atributos con formatos correctos\", function () {\r",
+                  "    var jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData.total).to.eql(600);\r",
+                  "    pm.expect(jsonData.skip).to.eql(0);\r",
+                  "    pm.expect(jsonData.limit).to.eql(0);\r",
+                  "    pm.expect(jsonData.data[0]._id).to.match(/^[a-f\\d]{24}$/i); //objectID de mongo\r",
+                  "    pm.expect(jsonData.data[0].email).to.match(/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/); //correo valido\r",
+                  "    pm.expect(jsonData.data[0].creado).to.match(/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}/); //fecha ISO 8601\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
           "request": {
             "method": "GET",
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/clients/",
-              "host": ["{{baseUrl}}"],
-              "path": ["clients", ""]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "clients",
+                ""
+              ]
             },
             "description": "List all clients"
-          }
+          },
+          "response": []
         },
         {
-          "name": "Get client by id",
+          "name": "TC-12: Listar clientes con parámetros de paginación inválido",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Código de status es 400\", function () {\r",
+                  "    pm.response.to.have.status(400);\r",
+                  "});\r",
+                  "\r",
+                  "\r",
+                  "pm.test(\"Body de respuesta tiene campo detail y su valor indica que el parametro no es válido \", function () {\r",
+                  "    const url = pm.request.url.toString();\r",
+                  "    var jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData.detail).to.eql(\"limit parameter not valid\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/clients/?skip=0&limit=\"hola\"",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "clients",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "skip",
+                  "value": "0"
+                },
+                {
+                  "key": "limit",
+                  "value": "\"hola\""
+                }
+              ]
+            },
+            "description": "List all clients"
+          },
+          "response": []
+        },
+        {
+          "name": "TC-13: Listar cliente específico",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Código de status es 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "\r",
+                  "pm.test(\"Body de respuesta tiene los campos _id, email y creado con los formatos adecuados\", function () {\r",
+                  "    var jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData._id).to.match(/^[a-f\\d]{24}$/i); //objectID de mongo\r",
+                  "    pm.expect(jsonData.email).to.match(/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/); //correo valido\r",
+                  "    pm.expect(jsonData.creado).to.match(/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}/); //fecha ISO 8601\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
           "request": {
             "method": "GET",
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/clients/{{client_id}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["clients", "{{client_id}}"],
-              "variable": [
-                {
-                  "key": "client_id",
-                  "value": ""
-                }
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "clients",
+                "{{client_id}}"
               ]
             },
-            "description": "Get a client by their ID"
-          }
+            "description": "List all clients"
+          },
+          "response": []
+        },
+        {
+          "name": "TC-14: Listar cliente específico que no existe",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Código de status es 404\", function () {\r",
+                  "    pm.response.to.have.status(404);\r",
+                  "});\r",
+                  "\r",
+                  "\r",
+                  "pm.test(\"Body de respuesta tiene los campos detail y su valor indica que el cliente no existe\", function () {\r",
+                  "    var jsonData = pm.response.json();\r",
+                  "    const url = pm.request.url.toString();\r",
+                  "    pm.expect(jsonData.detail).eq(\"Cliente \"+ url.split(\"/\")[6] +\" not found\" ) \r",
+                  "\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/clients/id_no_existente",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "clients",
+                "id_no_existente"
+              ]
+            },
+            "description": "List all clients"
+          },
+          "response": []
         }
       ]
     },
@@ -58,8 +203,13 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/products/?skip=0&limit=10000",
-              "host": ["{{baseUrl}}"],
-              "path": ["products", ""],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "products",
+                ""
+              ],
               "query": [
                 {
                   "key": "skip",
@@ -72,7 +222,8 @@
               ]
             },
             "description": "List all products with pagination"
-          }
+          },
+          "response": []
         },
         {
           "name": "Get product by id",
@@ -81,8 +232,13 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/products/{{product_id}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["products", "{{product_id}}"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "products",
+                "{{product_id}}"
+              ],
               "variable": [
                 {
                   "key": "product_id",
@@ -91,7 +247,8 @@
               ]
             },
             "description": "Get a product by its ID"
-          }
+          },
+          "response": []
         }
       ]
     },
@@ -105,8 +262,13 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/order/?skip=0&limit=10",
-              "host": ["{{baseUrl}}"],
-              "path": ["order", ""],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "order",
+                ""
+              ],
               "query": [
                 {
                   "key": "skip",
@@ -119,7 +281,8 @@
               ]
             },
             "description": "List all orders with pagination"
-          }
+          },
+          "response": []
         },
         {
           "name": "Get order by id",
@@ -128,8 +291,13 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/order/{{order_id}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["order", "{{order_id}}"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "order",
+                "{{order_id}}"
+              ],
               "variable": [
                 {
                   "key": "order_id",
@@ -138,7 +306,8 @@
               ]
             },
             "description": "Get an order by its ID"
-          }
+          },
+          "response": []
         },
         {
           "name": "Create order",
@@ -161,14 +330,41 @@
             },
             "url": {
               "raw": "{{baseUrl}}/order/",
-              "host": ["{{baseUrl}}"],
-              "path": ["order", ""]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "order",
+                ""
+              ]
             },
             "description": "Create a new order (returns 201 Created)"
-          }
+          },
+          "response": []
         },
         {
-          "name": "Update order",
+          "name": "TC-07: Actualizar una orden",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Código de status es 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "\r",
+                  "pm.test(\"Body de respuesta tiene campo mensaje y su valor es order updated\", function () {\r",
+                  "    var jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData.message).to.eql(\"order updated\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
           "request": {
             "method": "PUT",
             "header": [
@@ -179,7 +375,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"cliente_id\": \"60d5ec49f8d2e30d8c8b4567\",\n  \"fecha\": \"2024-01-15T10:30:00\",\n  \"canal\": \"WEB\",\n  \"moneda\": \"CRC\",\n  \"total\": 5000,\n  \"items\": [\n    {\n      \"producto_id\": \"60d5ec49f8d2e30d8c8b4568\",\n      \"cantidad\": 2,\n      \"precio_unit\": 2500\n    }\n  ],\n  \"metadatos\": {\n    \"cupon\": \"DESCUENTO10\"\n  }\n}",
+              "raw": "{\n  \"cliente_id\": \"60d5ec49f8d2e30d8c8b4567\",\n  \"fecha\": \"2024-01-15T10:30:00\",\n  \"canal\": \"WEB\",\n  \"moneda\": \"CRC\",\n  \"total\": 5104,\n  \"items\": [\n    {\n      \"producto_id\": \"60d5ec49f8d2e30d8c8b4568\",\n      \"cantidad\": 2,\n      \"precio_unit\": 2400\n    }\n  ],\n  \"metadatos\": {\n    \"cupon\": \"DESCUENTO5\"\n  }\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -188,8 +384,13 @@
             },
             "url": {
               "raw": "{{baseUrl}}/order/{{order_id}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["order", "{{order_id}}"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "order",
+                "{{order_id}}"
+              ],
               "variable": [
                 {
                   "key": "order_id",
@@ -198,17 +399,103 @@
               ]
             },
             "description": "Update an existing order by its ID"
-          }
+          },
+          "response": []
         },
         {
-          "name": "Delete order",
+          "name": "TC-08: Actualizar una orden con datos incorrectos",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Código de status es 422\", function () {\r",
+                  "    pm.response.to.have.status(422);\r",
+                  "});\r",
+                  "\r",
+                  "\r",
+                  "pm.test(\"Body de respuesta tiene campo detail y su valor indica cuál campo está incorrecto \", function () {\r",
+                  "    var jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData.detail[0].msg).to.eql(\"Input should be 'WEB' or 'TIENDA'\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cliente_id\": \"60d5ec49f8d2e30d8c8b4567\",\n  \"fecha\": \"2024-01-15T10:30:00\",\n  \"canal\": 102,\n  \"moneda\": \"CRC\",\n  \"total\": 5104,\n  \"items\": [\n    {\n      \"producto_id\": \"60d5ec49f8d2e30d8c8b4568\",\n      \"cantidad\": 2,\n      \"precio_unit\": 2400\n    }\n  ],\n  \"metadatos\": {\n    \"cupon\": \"DESCUENTO5\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/order/{{order_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "order",
+                "{{order_id}}"
+              ],
+              "variable": [
+                {
+                  "key": "order_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Update an existing order by its ID"
+          },
+          "response": []
+        },
+        {
+          "name": "TC-09: Eliminar una orden",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Body de respuesta tiene campo mensaje y su valor es order deleted\", function () {\r",
+                  "    var jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData.message).to.eql(\"order deleted\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
           "request": {
             "method": "DELETE",
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/order/{{order_id}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["order", "{{order_id}}"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "order",
+                "{{order_id}}"
+              ],
               "variable": [
                 {
                   "key": "order_id",
@@ -217,9 +504,56 @@
               ]
             },
             "description": "Delete an order by its ID"
-          }
+          },
+          "response": []
+        },
+        {
+          "name": "TC-10: Eliminar orden con ID de formato inválido",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Código de status es 404\", function () {\r",
+                  "    pm.response.to.have.status(404);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Body de respuesta tiene campo detail y su valor indica que el id no existe \", function () {\r",
+                  "    const url = pm.request.url.toString();\r",
+                  "    var jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData.detail).to.eql(\"order \"+ url.split(\"/\")[6]+\" not found\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/order/invalido123",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "order",
+                "invalido123"
+              ]
+            },
+            "description": "Delete an order by its ID"
+          },
+          "response": []
         }
       ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8000/api/mongo"
     }
   ]
 }
