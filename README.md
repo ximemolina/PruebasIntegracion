@@ -16,6 +16,7 @@ PruebasIntegracion/
     │   └── products.json
     └── environments/
         └── local.json       # Variables de entorno (URL base, etc.)
+└── tests/
 ```
 
 ---
@@ -71,6 +72,49 @@ npx newman run postman/Integración_API_Servicios.coleccion.json -e postman/QA_A
 | Órdenes | Crear, Leer, Actualizar, Eliminar |
 | Clientes | Leer |
 | Productos | Leer |
+
+---
+
+## Pruebas de integración con Pytest y SQLite en memoria
+
+Se tiene la estructura dentro de la carpeta tests:
+
+PruebasIntegracion/
+├── api-mongo/               # API FastAPI + MongoDB (ver su propio README)
+└── postman/
+└── tests
+    └── test_api_integration.py
+    └── conftest.py
+    
+---
+
+## Inicializar y crear entorno uv en tests/
+
+```bash
+cd tests
+uv init
+uv venv
+```
+
+---
+
+## Importar librerías en el entorno uv 
+
+```bash
+cd tests
+uv pip install pytest
+uv pip install requests
+uv pip install pymongo
+```
+
+---
+
+## Ejecutar los tests
+
+```bash
+uv run pytest
+uv run pytest -s        # Para poder ver los prints
+```
 
 ---
 
