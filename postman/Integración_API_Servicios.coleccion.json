@@ -1,10 +1,11 @@
 {
   "info": {
-    "_postman_id": "26d4b816-2cd9-4b29-b8f5-ec1756338b9e",
+    "_postman_id": "419e205c-6318-4928-8ff7-ea9665c015c8",
     "name": "Integración API - Servicios",
     "description": "Coleccion para realizar las pruebas de integración",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_exporter_id": "43666731"
+    "_exporter_id": "47801774",
+    "_collection_link": "https://go.postman.co/collection/47801774-419e205c-6318-4928-8ff7-ea9665c015c8?source=collection_link"
   },
   "item": [
     {
@@ -21,8 +22,18 @@
                   "    pm.response.to.have.status(200);\r",
                   "});\r",
                   "\r",
+                  "pm.test(\"Data es un array\", function () {\r",
+                  "    var jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData.data).to.be.an('array');\r",
+                  "});\r",
                   "\r",
-                  "pm.test(\"Body de respuesta tiene los campos total, skip, limit y data. El campo data posee atributos con formatos correctos\", function () {\r",
+                  "pm.test(\"Objetos de data tienen las propiedades correctas\", function () {\r",
+                  "    var jsonData = pm.response.json();\r",
+                  "    var item = jsonData.data[0];\r",
+                  "    pm.expect(item).to.have.all.keys('_id', 'nombre', 'email', 'genero', 'pais', 'preferencias', 'creado');\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Contenido de respuesta tiene los formatos correctos\", function () {\r",
                   "    var jsonData = pm.response.json();\r",
                   "    pm.expect(jsonData.total).to.eql(600);\r",
                   "    pm.expect(jsonData.skip).to.eql(0);\r",
@@ -66,8 +77,17 @@
                   "    pm.response.to.have.status(400);\r",
                   "});\r",
                   "\r",
+                  "pm.test(\"Body de respuesta contiene el campo detail\", function () {\r",
+                  "    var jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData).to.have.property('detail');\r",
+                  "});\r",
                   "\r",
-                  "pm.test(\"Body de respuesta tiene campo detail y su valor indica que el parametro no es válido \", function () {\r",
+                  "pm.test(\"El campo detail es un string\", function () {\r",
+                  "    var jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData.detail).to.be.a('string');\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Contenido de respuesta indica que el parámetro limit no es válido\", function () {\r",
                   "    const url = pm.request.url.toString();\r",
                   "    var jsonData = pm.response.json();\r",
                   "    pm.expect(jsonData.detail).to.eql(\"limit parameter not valid\");\r",
@@ -117,6 +137,21 @@
                   "    pm.response.to.have.status(200);\r",
                   "});\r",
                   "\r",
+                  "pm.test(\"Body de respuesta tiene los campos correctos con sus tipos\", function () {\r",
+                  "    var jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData._id).to.be.a('string');\r",
+                  "    pm.expect(jsonData.nombre).to.be.a('string');\r",
+                  "    pm.expect(jsonData.email).to.be.a('string');\r",
+                  "    pm.expect(jsonData.genero).to.be.a('string');\r",
+                  "    pm.expect(jsonData.pais).to.be.a('string');\r",
+                  "    pm.expect(jsonData.preferencias).to.be.an('object');\r",
+                  "    pm.expect(jsonData.creado).to.be.a('string');\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Body de respuesta contiene todos los campos del contrato\", function () {\r",
+                  "    var jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData).to.have.all.keys('_id', 'nombre', 'email', 'genero', 'pais', 'preferencias', 'creado');\r",
+                  "});\r",
                   "\r",
                   "pm.test(\"Body de respuesta tiene los campos _id, email y creado con los formatos adecuados\", function () {\r",
                   "    var jsonData = pm.response.json();\r",
@@ -159,8 +194,13 @@
                   "    pm.response.to.have.status(404);\r",
                   "});\r",
                   "\r",
+                  "pm.test(\"Body de respuesta contiene el campo detail de tipo string\", function () {\r",
+                  "    var jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData).to.have.property('detail');\r",
+                  "    pm.expect(jsonData.detail).to.be.a('string');\r",
+                  "});\r",
                   "\r",
-                  "pm.test(\"Body de respuesta tiene los campos detail y su valor indica que el cliente no existe\", function () {\r",
+                  "pm.test(\"Respuesta indica que el cliente no existe\", function () {\r",
                   "    var jsonData = pm.response.json();\r",
                   "    const url = pm.request.url.toString();\r",
                   "    pm.expect(jsonData.detail).eq(\"Cliente \"+ url.split(\"/\")[6] +\" not found\" ) \r",
@@ -461,19 +501,13 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/products/{{product_id}}",
+              "raw": "{{baseUrl}}/products/id_invalido",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "products",
-                "{{product_id}}"
-              ],
-              "variable": [
-                {
-                  "key": "product_id",
-                  "value": ""
-                }
+                "id_invalido"
               ]
             },
             "description": "Get a product by its ID"
@@ -644,82 +678,6 @@
           "response": []
         },
         {
-          "name": "TC-03: Listar orden específica",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "// Estado HTTP\r",
-                  "pm.test(\"El código de estado es 200\", function () {\r",
-                  "    pm.response.to.have.status(200);\r",
-                  "});\r",
-                  "\r",
-                  "// Contrato: validar que existen las claves principales\r",
-                  "pm.test(\"El objeto de respuesta contiene los campos requeridos.\", function () {\r",
-                  "    let jsonData = pm.response.json();\r",
-                  "    pm.expect(jsonData).to.have.keys([\"_id\",\"cliente_id\",\"fecha\",\"canal\",\"moneda\",\"total\",\"items\"]);\r",
-                  "    pm.expect(jsonData.items).to.be.an(\"array\");\r",
-                  "});\r",
-                  "\r",
-                  "// Formato: validar ObjectId y fecha ISO 8601\r",
-                  "pm.test(\"Los campos tienen el formato correcto.\", function () {\r",
-                  "    let jsonData = pm.response.json();\r",
-                  "    let regexObjectId = /^[0-9a-fA-F]{24}$/;\r",
-                  "    let regexISODate = /^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?$/;\r",
-                  "\r",
-                  "    pm.expect(jsonData._id).to.match(regexObjectId);\r",
-                  "    pm.expect(jsonData.cliente_id).to.match(regexObjectId);\r",
-                  "    pm.expect(jsonData.fecha).to.match(regexISODate);\r",
-                  "    pm.expect(jsonData.canal).to.be.a(\"string\");\r",
-                  "    pm.expect(jsonData.moneda).to.be.a(\"string\");\r",
-                  "});\r",
-                  "\r",
-                  "// Contenido: validar coherencia de valores\r",
-                  "pm.test(\"Los valores son coherentes.\", function () {\r",
-                  "    let jsonData = pm.response.json();\r",
-                  "    pm.expect(jsonData.total).to.be.above(0);\r",
-                  "\r",
-                  "    pm.expect(jsonData.items).to.be.an(\"array\").that.is.not.empty;\r",
-                  "    jsonData.items.forEach(item => {\r",
-                  "        let regexObjectId = /^[0-9a-fA-F]{24}$/;\r",
-                  "        pm.expect(item.producto_id).to.match(regexObjectId);\r",
-                  "        pm.expect(item.cantidad).to.be.above(0);\r",
-                  "        pm.expect(item.precio_unit).to.be.above(0);\r",
-                  "    });\r",
-                  "});\r",
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/order/{{order_id}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "order",
-                "{{order_id}}"
-              ],
-              "variable": [
-                {
-                  "key": "order_id",
-                  "value": ""
-                }
-              ]
-            },
-            "description": "Get an order by its ID"
-          },
-          "response": []
-        },
-        {
           "name": "TC-04: Listar orden específica con id no existente",
           "event": [
             {
@@ -755,19 +713,13 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/order/{{order_id}}",
+              "raw": "{{baseUrl}}/order/id_no_existente",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "order",
-                "{{order_id}}"
-              ],
-              "variable": [
-                {
-                  "key": "order_id",
-                  "value": ""
-                }
+                "id_no_existente"
               ]
             },
             "description": "Get an order by its ID"
@@ -836,6 +788,82 @@
               ]
             },
             "description": "Create a new order (returns 201 Created)"
+          },
+          "response": []
+        },
+        {
+          "name": "TC-03: Listar orden específica",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Estado HTTP\r",
+                  "pm.test(\"El código de estado es 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "// Contrato: validar que existen las claves principales\r",
+                  "pm.test(\"El objeto de respuesta contiene los campos requeridos.\", function () {\r",
+                  "    let jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData).to.have.keys([\"_id\",\"cliente_id\",\"fecha\",\"canal\",\"moneda\",\"total\",\"items\",\"metadatos\"]);\r",
+                  "    pm.expect(jsonData.items).to.be.an(\"array\");\r",
+                  "});\r",
+                  "\r",
+                  "// Formato: validar ObjectId y fecha ISO 8601\r",
+                  "pm.test(\"Los campos tienen el formato correcto.\", function () {\r",
+                  "    let jsonData = pm.response.json();\r",
+                  "    let regexObjectId = /^[0-9a-fA-F]{24}$/;\r",
+                  "    let regexISODate = /^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?$/;\r",
+                  "\r",
+                  "    pm.expect(jsonData._id).to.match(regexObjectId);\r",
+                  "    pm.expect(jsonData.cliente_id).to.match(regexObjectId);\r",
+                  "    pm.expect(jsonData.fecha).to.match(regexISODate);\r",
+                  "    pm.expect(jsonData.canal).to.be.a(\"string\");\r",
+                  "    pm.expect(jsonData.moneda).to.be.a(\"string\");\r",
+                  "});\r",
+                  "\r",
+                  "// Contenido: validar coherencia de valores\r",
+                  "pm.test(\"Los valores son coherentes.\", function () {\r",
+                  "    let jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData.total).to.be.above(0);\r",
+                  "\r",
+                  "    pm.expect(jsonData.items).to.be.an(\"array\").that.is.not.empty;\r",
+                  "    jsonData.items.forEach(item => {\r",
+                  "        let regexObjectId = /^[0-9a-fA-F]{24}$/;\r",
+                  "        pm.expect(item.producto_id).to.match(regexObjectId);\r",
+                  "        pm.expect(item.cantidad).to.be.above(0);\r",
+                  "        pm.expect(item.precio_unit).to.be.above(0);\r",
+                  "    });\r",
+                  "});\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/order/{{order_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "order",
+                "{{order_id}}"
+              ],
+              "variable": [
+                {
+                  "key": "order_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Get an order by its ID"
           },
           "response": []
         },
@@ -935,6 +963,11 @@
                   "    pm.response.to.have.status(200);\r",
                   "});\r",
                   "\r",
+                  "pm.test(\"Body de respuesta contiene el campo message de tipo string\", function () {\r",
+                  "    var jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData).to.have.property('message');\r",
+                  "    pm.expect(jsonData.message).to.be.a('string');\r",
+                  "});\r",
                   "\r",
                   "pm.test(\"Body de respuesta tiene campo mensaje y su valor es order updated\", function () {\r",
                   "    var jsonData = pm.response.json();\r",
@@ -957,7 +990,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"cliente_id\": \"60d5ec49f8d2e30d8c8b4567\",\n  \"fecha\": \"2024-01-15T10:30:00\",\n  \"canal\": \"WEB\",\n  \"moneda\": \"CRC\",\n  \"total\": 5104,\n  \"items\": [\n    {\n      \"producto_id\": \"60d5ec49f8d2e30d8c8b4568\",\n      \"cantidad\": 2,\n      \"precio_unit\": 2400\n    }\n  ],\n  \"metadatos\": {\n    \"cupon\": \"DESCUENTO5\"\n  }\n}",
+              "raw": "{\n  \"cliente_id\": \"60d5ec49f8d2e30d8c8b4567\",\n  \"fecha\": \"2024-01-15T10:30:00\",\n  \"canal\": \"WEB\",\n  \"moneda\": \"CRC\",\n  \"total\": 5004,\n  \"items\": [\n    {\n      \"producto_id\": \"60d5ec49f8d2e30d8c8b4568\",\n      \"cantidad\": 1,\n      \"precio_unit\": 2400\n    }\n  ],\n  \"metadatos\": {\n    \"cupon\": \"DESCUENTO5\"\n  }\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -995,6 +1028,11 @@
                   "    pm.response.to.have.status(422);\r",
                   "});\r",
                   "\r",
+                  "pm.test(\"Body de respuesta contiene el campo detail de tipo string\", function () {\r",
+                  "    var jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData).to.have.property('detail');\r",
+                  "    pm.expect(jsonData.detail).to.be.a('array');\r",
+                  "});\r",
                   "\r",
                   "pm.test(\"Body de respuesta tiene campo detail y su valor indica cuál campo está incorrecto \", function () {\r",
                   "    var jsonData = pm.response.json();\r",
@@ -1055,6 +1093,12 @@
                   "    pm.response.to.have.status(200);\r",
                   "});\r",
                   "\r",
+                  "pm.test(\"Body de respuesta contiene el campo message de tipo string\", function () {\r",
+                  "    var jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData).to.have.property('message');\r",
+                  "    pm.expect(jsonData.message).to.be.a('string');\r",
+                  "});\r",
+                  "\r",
                   "pm.test(\"Body de respuesta tiene campo mensaje y su valor es order deleted\", function () {\r",
                   "    var jsonData = pm.response.json();\r",
                   "    pm.expect(jsonData.message).to.eql(\"order deleted\");\r",
@@ -1098,6 +1142,12 @@
                 "exec": [
                   "pm.test(\"Código de status es 404\", function () {\r",
                   "    pm.response.to.have.status(404);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Body de respuesta contiene el campo detail de tipo string\", function () {\r",
+                  "    var jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData).to.have.property('detail');\r",
+                  "    pm.expect(jsonData.detail).to.be.a('string');\r",
                   "});\r",
                   "\r",
                   "pm.test(\"Body de respuesta tiene campo detail y su valor indica que el id no existe \", function () {\r",
