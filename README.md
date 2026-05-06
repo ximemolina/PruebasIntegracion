@@ -12,7 +12,7 @@ PruebasIntegracion/
 ├── postman/
 │   ├── Integración_API_Servicios.coleccion.json      # Colección de endpoints con sus pruebas
 │   └── QA_API_LAB.postman_environment.json           # Ambiente de pruebas
-└── tests/
+└── tests/                                            # Pruebas de Pytest
     ├── test_api_integration.py
     └── conftest.py
 ```
