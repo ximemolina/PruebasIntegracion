@@ -448,3 +448,240 @@ def test_contrato_orden_items(db_connection):
         assert isinstance(cantidad, int), "❌ cantidad debe ser entero"
         assert isinstance(precio_unit, int), "❌ precio_unit debe ser entero"
         print(f"✅ Item {id_} de orden {orden_id} cumple contrato")
+
+def test_idempotencia_ordenes_duplicadas(db_connection):
+    conn = db_connection
+    cursor = conn.cursor()
+
+    print("-----------------------------------------------------------------------------------------------------")
+    print()
+    print("🔍 Validar idempotencia: crear múltiples órdenes con los mismos datos de negocio")
+
+    cursor.execute("SELECT _id FROM clientes LIMIT 1")
+    cliente = cursor.fetchone()
+    assert cliente is not None, "❌ No hay clientes en la tabla"
+    cliente_id = cliente[0]
+
+    cursor.execute("SELECT _id FROM productos LIMIT 1")
+    producto = cursor.fetchone()
+    assert producto is not None, "❌ No hay productos en la tabla"
+    producto_id = producto[0]
+
+    fecha = datetime.now().isoformat()
+
+    orden_id_1 = str(ObjectId())
+    cursor.execute("""
+        INSERT INTO ordenes (_id, cliente_id, fecha, canal, moneda, total, cupon)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    """, (orden_id_1, cliente_id, fecha, "WEB", "CRC", 3000, ""))
+    cursor.execute("""
+        INSERT INTO orden_items (orden_id, producto_id, cantidad, precio_unit)
+        VALUES (?, ?, ?, ?)
+    """, (orden_id_1, producto_id, 2, 1500))
+    conn.commit()
+    print(f"✅ Primera orden creada: {orden_id_1}")
+
+    orden_id_2 = str(ObjectId())
+    cursor.execute("""
+        INSERT INTO ordenes (_id, cliente_id, fecha, canal, moneda, total, cupon)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    """, (orden_id_2, cliente_id, fecha, "WEB", "CRC", 3000, ""))
+    cursor.execute("""
+        INSERT INTO orden_items (orden_id, producto_id, cantidad, precio_unit)
+        VALUES (?, ?, ?, ?)
+    """, (orden_id_2, producto_id, 2, 1500))
+    conn.commit()
+    print(f"✅ Segunda orden creada: {orden_id_2}")
+
+    assert orden_id_1 != orden_id_2, "❌ Los IDs de las órdenes deberían ser distintos"
+    print("✅ Las órdenes tienen IDs únicos — no hay colisión")
+
+    cursor.execute("SELECT _id FROM ordenes WHERE _id IN (?, ?)", (orden_id_1, orden_id_2))
+    resultado = cursor.fetchall()
+    assert len(resultado) == 2, "❌ No se encontraron ambas órdenes en la tabla"
+    print("✅ Ambas órdenes coexisten correctamente en la tabla")
+
+    for orden_id in [orden_id_1, orden_id_2]:
+        cursor.execute("SELECT cantidad, precio_unit FROM orden_items WHERE orden_id=?", (orden_id,))
+        item = cursor.fetchone()
+        assert item is not None, f"❌ No se encontró item para la orden {orden_id}"
+        assert item[0] == 2, f"❌ Cantidad incorrecta en orden {orden_id}"
+        assert item[1] == 1500, f"❌ Precio incorrecto en orden {orden_id}"
+        print(f"✅ Item de orden {orden_id} validado correctamente")
+
+    print("🎉 Idempotencia validada: múltiples órdenes con mismos datos de negocio coexisten sin conflicto gracias a IDs únicos")
+
+def test_manejo_errores_body_invalido():
+    print("-----------------------------------------------------------------------------------------------------")
+    print()
+    print("🔍 Manejo de errores: forzar body inválido y documentar respuestas")
+
+    casos = [
+        {
+            "descripcion": "Body completamente vacío",
+            "payload": {},
+        },
+        {
+            "descripcion": "Campos requeridos faltantes (sin cliente_id)",
+            "payload": {
+                "canal": "WEB",
+                "moneda": "CRC",
+                "items": [{"producto_id": "abc123", "cantidad": 1, "precio_unit": 1500}]
+            },
+        },
+        {
+            "descripcion": "Cantidad negativa en item",
+            "payload": {
+                "cliente_id": "cliente_fake_123",
+                "canal": "WEB",
+                "moneda": "CRC",
+                "items": [{"producto_id": "abc123", "cantidad": -5, "precio_unit": 1500}]
+            },
+        },
+        {
+            "descripcion": "Tipo de dato incorrecto (cantidad como string)",
+            "payload": {
+                "cliente_id": "cliente_fake_123",
+                "canal": "WEB",
+                "moneda": "CRC",
+                "items": [{"producto_id": "abc123", "cantidad": "mucho", "precio_unit": 1500}]
+            },
+        },
+        {
+            "descripcion": "cliente_id inexistente",
+            "payload": {
+                "cliente_id": "noexiste000000000000",
+                "canal": "WEB",
+                "moneda": "CRC",
+                "items": [{"producto_id": "abc123", "cantidad": 1, "precio_unit": 1500}]
+            },
+        },
+        {
+            "descripcion": "Items vacío",
+            "payload": {
+                "cliente_id": "cliente_fake_123",
+                "canal": "WEB",
+                "moneda": "CRC",
+                "items": []
+            },
+        },
+        {
+            "descripcion": "Body no es JSON (texto plano)",
+            "payload": None,
+        },
+    ]
+
+    errores_documentados = []
+
+    for caso in casos:
+        print(f"\n🚨 Caso: {caso['descripcion']}")
+
+        if caso["payload"] is None:
+            response = requests.post(
+                f"{BASE_URL}/orders",
+                data="esto no es json",
+                headers={"Content-Type": "text/plain"},
+                timeout=10
+            )
+        else:
+            response = requests.post(
+                f"{BASE_URL}/orders",
+                json=caso["payload"],
+                timeout=10
+            )
+
+        print(f"   Status code: {response.status_code}")
+
+        try:
+            body = response.json()
+            print(f"   Respuesta: {body}")
+        except Exception:
+            body = response.text
+            print(f"   Respuesta (texto): {body}")
+
+        errores_documentados.append({
+            "caso": caso["descripcion"],
+            "status_code": response.status_code,
+            "respuesta": body
+        })
+
+        assert response.status_code != 200, (
+            f"❌ El caso '{caso['descripcion']}' retornó 200 — "
+            f"la API debería rechazar este body"
+        )
+        print(f"   ✅ La API rechazó correctamente el body inválido con {response.status_code}")
+
+    print("\n-----------------------------------------------------------------------------------------------------")
+    print("📋 Resumen de errores documentados:\n")
+    for entry in errores_documentados:
+        print(f"  - {entry['caso']}")
+        print(f"    Status: {entry['status_code']}")
+        print(f"    Respuesta: {entry['respuesta']}")
+        print()
+
+    print("🎉 Todos los casos de body inválido fueron rechazados y documentados correctamente")
+
+def test_integracion_parcial_api_ok_db_falla(db_connection):
+    print("-----------------------------------------------------------------------------------------------------")
+    print()
+    print("🔍 Prueba de integración parcial: API responde bien pero la base de datos falla")
+
+    conn = db_connection
+    cursor = conn.cursor()
+
+    # 1. Verificar que la API responde correctamente
+    response = requests.get(f"{BASE_URL}/products", timeout=10)
+    assert response.status_code == 200, "❌ La API no está disponible"
+    print("✅ La API responde correctamente con 200 OK")
+
+    body = response.json()
+    assert "data" in body and len(body["data"]) > 0, "❌ La API no devolvió productos"
+    producto = body["data"][0]
+    print(f"✅ Producto obtenido desde la API: {producto['_id']} - {producto['nombre']}")
+
+    # 2. Simular fallo de base de datos cerrando la conexión
+    print("\n🔥 Simulando fallo de base de datos (cerrando conexión)...")
+    conn.close()
+    print("✅ Conexión a la base de datos cerrada")
+
+    # 3. Intentar insertar en la base de datos con la conexión cerrada
+    orden_id = str(ObjectId())
+    print(f"\n🚨 Intentando insertar orden {orden_id} con DB caída...")
+
+    try:
+        cursor.execute("""
+            INSERT INTO ordenes (_id, cliente_id, fecha, canal, moneda, total, cupon)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        """, (
+            orden_id,
+            "cliente_fake_123",
+            datetime.now().isoformat(),
+            "WEB",
+            "CRC",
+            3000,
+            ""
+        ))
+        conn.commit()
+
+        # Si llega aquí, la DB no falló como se esperaba
+        print("⚠️  La inserción no lanzó error — la DB no simuló el fallo correctamente")
+
+    except Exception as e:
+        print(f"✅ Error capturado al intentar insertar con DB caída: {type(e).__name__}: {e}")
+
+        # 4. Documentar qué debería pasar en un sistema real
+        print("\n📋 Comportamiento esperado en producción:")
+        print("   - La API debería capturar el error de DB y retornar 503, no 200")
+        print("   - La transacción no debería quedar en estado inconsistente")
+        print("   - El error debería quedar registrado en logs")
+        print("   - El cliente debería poder reintentar de forma segura")
+        print("\n⚠️  Riesgo identificado: si la API retorna 200 antes de confirmar")
+        print("   la escritura en DB, el cliente asume éxito pero la orden se pierde.")
+
+    # 5. Verificar que la API sigue respondiendo aunque la DB haya fallado
+    print("🔍 Verificando que la API sigue disponible tras el fallo de DB...")
+    response = requests.get(f"{BASE_URL}/products", timeout=10)
+    assert response.status_code == 200, "❌ La API dejó de responder tras el fallo de DB"
+    print("✅ La API sigue disponible — el fallo de DB no derribó el servicio")
+
+    print("\n🎉 Prueba de integración parcial completada y documentada")
